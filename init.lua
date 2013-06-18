@@ -1,11 +1,11 @@
 minetest.register_node("glow:stone_with_worms", {
 	description = "Glow Worms in Stone",
-	tiles = {"default_stone.png^worms.png"},
+	tiles = { "default_stone.png^worms.png" },
 	is_ground_content = true,
-	groups = {cracky=1},
+	groups = { cracky=1 },
 	drop = "glow:stone_with_worms",
 	paramtype = "light",
-	light_source = 4,
+	light_source = 5,
 	sounds = default.node_sound_stone_defaults(),
 })
 
@@ -27,7 +27,7 @@ minetest.register_node("glow:shrooms", {
 	inventory_image = "shrooms.png",
 	wield_image = "shrooms.png",
 	drop = 'glow:shrooms',
-	groups = { snappy = 3, flammable=2, flower=1, flora=1, attached_node=1 },
+	groups = { snappy=3, flammable=2, flower=1, flora=1, attached_node=1 },
 	sunlight_propagates = true,
 	walkable = false,
 	pointable = true,
