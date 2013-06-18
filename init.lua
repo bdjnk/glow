@@ -1,4 +1,3 @@
-
 minetest.register_node("glow:stone_with_worms", {
 	description = "Glow Worms in Stone",
 	tiles = {"default_stone.png^worms.png"},
@@ -6,7 +5,7 @@ minetest.register_node("glow:stone_with_worms", {
 	groups = {cracky=1},
 	drop = "glow:stone_with_worms",
 	paramtype = "light",
-	light_source = 6,
+	light_source = 4,
 	sounds = default.node_sound_stone_defaults(),
 })
 
