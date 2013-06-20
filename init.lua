@@ -99,14 +99,15 @@ minetest.register_abm({
 		"default:grass_4",
 		"default:grass_5",
 	},
-	interval = 3.0,
-	chance = 200,
+	interval = 1.0,
+	chance = 600,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		if minetest.get_timeofday() > 0.70 or minetest.get_timeofday() < 0.20 then
+		if minetest.get_timeofday() > 0.74 or minetest.get_timeofday() < 0.22 then
 			--local water_nodes = minetest.find_nodes_in_area(minp, maxp, "group:water")
 			--if #water_nodes > 0 then
+			if minetest.find_node_near(pos, 3, "glow:fireflies") == nil then
 				minetest.set_node(pos, {name = "glow:fireflies"})
-			--end
+			end
 		end
 	end,
 })
