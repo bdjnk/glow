@@ -2,23 +2,99 @@ minetest.register_node("glow:stone_with_worms", {
 	description = "Glow Worms in Stone",
 	tiles = { "default_stone.png^worms.png" },
 	is_ground_content = true,
-	groups = { cracky=1 },
+	groups = { cracky = 1 },
+	sounds = default.node_sound_stone_defaults(),
 	drop = "glow:stone_with_worms",
 	paramtype = "light",
 	light_source = 4,
-	sounds = default.node_sound_stone_defaults(),
 })
 
-minetest.register_ore({
-	ore_type       = "scatter",
-	ore            = "glow:stone_with_worms",
-	wherein        = "default:stone",
-	clust_scarcity = 800,
-	clust_num_ores = 4,
-	clust_size     = 8,
-	height_min     = -100,
-	height_max     = 20,
+minetest.register_on_generated(function(minp, maxp, seed)
+	local stone_nodes = minetest.find_nodes_in_area(minp, maxp, "default:stone")
+	for key, pos in pairs(stone_nodes) do
+		if minetest.find_node_near(pos, 1, "air") ~= nil and math.random() < 0.001 and not near_surface(pos) then
+			local posNeg = { x=pos.x-6, y=pos.y-6, z=pos.z-6 }
+		  local posPos = { x=pos.x+6, y=pos.y+6, z=pos.z+6 }
+			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+			local lava = minetest.find_nodes_in_area(posNeg, posPos, "default:lava_source")
+			if #worms == 0 and #lava == 0 then
+				for nx = -4, 4, 1 do
+					for ny = -4, 4, 1 do
+						for nz = -4, 4, 1 do
+							if math.random() < 0.1 then
+								local tpos = { x=pos.x+nx, y=pos.y+ny, z=pos.z+nz }
+								if minetest.get_node(tpos).name == "default:stone" then
+									minetest.add_node(tpos, { name = "glow:stone_with_worms" })
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end)
+
+minetest.register_abm({
+	nodenames = { "default:stone" },
+	neighbors = { "air" },
+	interval = 60.0,
+	chance = 1000,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		if not near_surface(pos) then
+			local posNeg = { x=pos.x-9, y=pos.y-9, z=pos.z-9 }
+		  local posPos = { x=pos.x+9, y=pos.y+9, z=pos.z+9 }
+			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+			local lava = minetest.find_nodes_in_area(posNeg, posPos, "default:lava_source")
+			if #worms < 2 and #lava == 0 then
+				minetest.add_node(pos, { name = "glow:stone_with_worms" })
+			end
+		end
+	end,
 })
+
+minetest.register_abm({
+	nodenames = { "glow:stone_with_worms" },
+	interval = 60.0,
+	chance = 10,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		local posNeg = { x=pos.x-4, y=pos.y-4, z=pos.z-4 }
+		local posPos = { x=pos.x+4, y=pos.y+4, z=pos.z+4 }
+		local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+		if #worms < 20 and math.random() < 0.90 then
+			local apos = { x=pos.x+math.random(-1,1), y=pos.y+math.random(-1,1), z=pos.z+math.random(-1,1) } 
+			if minetest.get_node(apos).name == "default:stone" and minetest.find_node_near(pos, 1, "air") ~= nil then
+				minetest.add_node(apos, { name = "glow:stone_with_worms" })
+			end
+		else
+			minetest.add_node(pos, { name = "default:stone" })
+		end
+	end,
+})
+
+function near_surface(pos)
+	for dx = -4, 4, 1 do
+		for dy = -4, 4, 1 do
+			for dz = -4, 4, 1 do
+				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
+				local light = minetest.get_node_light(dpos, 0.5)
+				if light ~= nil and light > 2 then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+function is_facing(pos, nodename)
+	for d = -1, 1, 2 do
+		if nodename == minetest.get_node({pos.x+d, pos.y,   pos.z  }).name then return true end
+		if nodename == minetest.get_node({pos.x,   pos.y+d, pos.z  }).name then return true end
+		if nodename == minetest.get_node({pos.x,   pos.y,   pos.z+d}).name then return true end
+	end
+	return false
+end
 
 minetest.register_node("glow:shrooms", {
 	description = "Glow Shrooms",
@@ -42,6 +118,67 @@ minetest.register_node("glow:shrooms", {
 		fixed = { -0.4, -0.5, -0.4, 0.4, 0.0, 0.4 },
 	},
 })
+
+minetest.register_on_generated(function(minp, maxp, seed)
+	local tree_nodes = minetest.find_nodes_in_area(minp, maxp, "default:tree")
+	for key, pos in pairs(tree_nodes) do
+		local bpos = { x=pos.x, y=pos.y-1, z=pos.z }
+		if minetest.get_node(bpos).name ~= "default:tree" then
+			if math.random() < 0.2 then
+				add_shrooms(pos)
+			end
+		end
+	end
+end)
+
+minetest.register_abm({
+	nodenames = { "default:tree" },
+	neighbors = {
+		"air",
+		"default:dirt",
+	},
+	interval = 60.0,
+	chance = 60,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		local posNeg = { x=pos.x-1, y=pos.y-1, z=pos.z-1 }
+    local posPos = { x=pos.x+1, y=pos.y+1, z=pos.z+1 }
+		local shrooms = minetest.find_nodes_in_area(posNeg, posPos, "glow:shrooms")
+		if #shrooms == 0  or (#shrooms == 1 and math.random() < 0.4) then
+			add_shrooms(pos)
+		end
+	end,
+})
+
+minetest.register_abm({
+	nodenames = { "glow:shrooms" },
+	neighbors = {
+		"air",
+		"default:dirt_with_grass",
+	},
+	interval = 40.0,
+	chance = 10,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		if math.random() < 0.4 then
+			add_shrooms(pos)
+		else
+			minetest.remove_node(pos)
+		end
+	end,
+})
+
+function add_shrooms(pos)
+	for nx = -1, 1, 2 do
+		for ny = -1, 1, 1 do
+			for nz = -1, 1, 2 do
+				local tpos = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
+				if minetest.get_node(tpos).name == "default:dirt_with_grass" and math.random() < 0.2 then
+					local ppos = { x=tpos.x, y=tpos.y+1, z=tpos.z }
+					minetest.add_node(ppos, { name = "glow:shrooms" })
+				end
+			end
+		end
+	end
+end
 
 minetest.register_node("glow:fireflies", {
 	description = "Fireflies",
@@ -67,31 +204,8 @@ minetest.register_node("glow:fireflies", {
 	buildable_to = true,
 })
 
-minetest.register_on_generated(function(minp, maxp, seed)
-	local tree_nodes = minetest.find_nodes_in_area(minp, maxp, "default:tree")
-	for key, pos in pairs(tree_nodes) do
-		local bpos = { x=pos.x, y=pos.y-1, z=pos.z }
-		if minetest.get_node(bpos).name ~= "default:tree" then
-			local prob = math.random()
-			if prob <= 0.2 then
-				for nx = -1, 1, 2 do
-					for ny = -1, 1, 2 do
-						for nz = -1, 1, 2 do
-							local tpos = { x=bpos.x+nx, y=bpos.y+ny, z=bpos.z+nz }
-							if minetest.get_node(tpos).name == "default:dirt_with_grass" then
-								local ppos = { x=tpos.x, y=tpos.y+1, z=tpos.z }
-								minetest.add_node(ppos, { name = "glow:shrooms" })
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-end)
-
 minetest.register_abm({
-	nodenames = {"air"},
+	nodenames = { "air" },
 	neighbors = {
 		"default:grass_1",
 		"default:grass_2",
@@ -99,12 +213,10 @@ minetest.register_abm({
 		"default:grass_4",
 		"default:grass_5",
 	},
-	interval = 1.0,
-	chance = 600,
+	interval = 2.0,
+	chance = 300,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		if minetest.get_timeofday() > 0.74 or minetest.get_timeofday() < 0.22 then
-			--local water_nodes = minetest.find_nodes_in_area(minp, maxp, "group:water")
-			--if #water_nodes > 0 then
 			if minetest.find_node_near(pos, 3, "glow:fireflies") == nil then
 				minetest.set_node(pos, {name = "glow:fireflies"})
 			end
