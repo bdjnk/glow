@@ -1,5 +1,13 @@
+-- Boilerplate to support localized strings if intllib mod is installed.
+local S
+if intllib then
+	S = intllib.Getter()
+else
+	S = function(s) return s end
+end
+
 minetest.register_node("glow:stone_with_worms", {
-	description = "Glow Worms in Stone",
+	description = S("Glow Worms in Stone"),
 	tiles = { "default_stone.png^worms.png" },
 	is_ground_content = true,
 	groups = { cracky = 1 },
@@ -97,7 +105,7 @@ function is_facing(pos, nodename)
 end
 
 minetest.register_node("glow:shrooms", {
-	description = "Glow Shrooms",
+	description = S("Glow Shrooms"),
 	drawtype = "plantlike",
 	tiles = { "shrooms.png" },
 	inventory_image = "shrooms.png",
@@ -181,7 +189,7 @@ function add_shrooms(pos)
 end
 
 minetest.register_node("glow:fireflies", {
-	description = "Fireflies",
+	description = S("Fireflies"),
 	drawtype = "glasslike",
 	tiles = {
 		{
