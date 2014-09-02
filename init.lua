@@ -47,8 +47,8 @@ end)
 minetest.register_abm({
 	nodenames = { "default:stone" },
 	neighbors = { "air" },
-	interval = 60.0,
-	chance = 1000,
+	interval = 120.0,
+	chance = 200,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		if not near_surface(pos) then
 			local posNeg = { x=pos.x-6, y=pos.y-6, z=pos.z-6 }
@@ -71,7 +71,7 @@ minetest.register_abm({
 		local posNeg = { x=pos.x-2, y=pos.y-2, z=pos.z-2 }
 		local posPos = { x=pos.x+2, y=pos.y+2, z=pos.z+2 }
 		local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
-		if #worms < 20 and math.random() < 0.90 then
+		if #worms < 20 and math.random() < 0.7 then
 			local apos = { x=pos.x+math.random(-1,1), y=pos.y+math.random(-1,1), z=pos.z+math.random(-1,1) } 
 			if minetest.get_node(apos).name == "default:stone" and minetest.find_node_near(pos, 1, "air") ~= nil then
 				minetest.add_node(apos, { name = "glow:stone_with_worms" })
@@ -88,7 +88,7 @@ function near_surface(pos)
 			for dz = -1, 1, 1 do
 				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
 				local light = minetest.get_node_light(dpos, 0.5)
-				if light ~= nil and light > 5 then
+				if light ~= nil and light > 4 then
 					return true
 				end
 			end
