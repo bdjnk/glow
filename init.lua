@@ -19,7 +19,7 @@ minetest.register_node("glow:cave_worms", {
 	sounds = default.node_sound_stone_defaults(),
 	drop = "glow:cave_worms",
 	paramtype = "light",
-	light_source = 14,
+	light_source = 4,
 	paramtype2 = "facedir",
 	sunlight_propagates = true,
 	walkable = false,
