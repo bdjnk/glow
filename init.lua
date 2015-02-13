@@ -6,39 +6,46 @@ else
 	S = function(s) return s end
 end
 
-minetest.register_node("glow:stone_with_worms", {
-	description = S("Glow Worms in Stone"),
-	tiles = { "default_stone.png^worms.png" },
-	is_ground_content = true,
-	groups = { cracky = 1 },
+
+-- WORMS --------------------------------------------------
+
+minetest.register_node("glow:cave_worms", {
+	description = S("Glow Worms"),
+	drawtype = "nodebox",
+	tiles = { "worms.png" },
+	inventory_image = "worms.png",
+	wield_image = "worms.png",
+	groups = { dig_immediate = 2 },
 	sounds = default.node_sound_stone_defaults(),
-	drop = "glow:stone_with_worms",
+	drop = "glow:cave_worms",
 	paramtype = "light",
-	light_source = 4,
+	light_source = 14,
+	paramtype2 = "facedir",
+	sunlight_propagates = true,
+	walkable = false,
+	node_box = {
+		type = "fixed",
+		fixed = {-1/2, -1/2, -1/2, 1/2, -15/32, 1/2},
+	},
+	selection_box = {
+		type = "fixed",
+		fixed = {-1/2, -1/2, -1/2, 1/2, -7/16, 1/2},
+	},
+	on_place = minetest.rotate_node,
 })
 
 minetest.register_on_generated(function(minp, maxp, seed)
 	local stone_nodes = minetest.find_nodes_in_area(minp, maxp, "default:stone")
 	for key, pos in pairs(stone_nodes) do
-		if minetest.find_node_near(pos, 1, "air") ~= nil and math.random() < 0.001 and not near_surface(pos) then
+		local spot = minetest.find_node_near(pos, 1, "air")
+		if spot ~= nil and math.random() < 0.001 and not near_surface(spot) then
 			local posNeg = { x=pos.x-6, y=pos.y-6, z=pos.z-6 }
 		  local posPos = { x=pos.x+6, y=pos.y+6, z=pos.z+6 }
-			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:cave_worms")
 			local lava = minetest.find_nodes_in_area(posNeg, posPos, "default:lava_source")
 			local water = minetest.find_nodes_in_area(posNeg, posPos, "group:water")
-			if #worms == 0 and #lava == 0 and #water > 0 then
-				for nx = -4, 4, 1 do
-					for ny = -4, 4, 1 do
-						for nz = -4, 4, 1 do
-							if math.random() < 0.1 then
-								local tpos = { x=pos.x+nx, y=pos.y+ny, z=pos.z+nz }
-								if minetest.get_node(tpos).name == "default:stone" then
-									minetest.add_node(tpos, { name = "glow:stone_with_worms" })
-								end
-							end
-						end
-					end
-				end
+			if #worms == 0 and #lava == 0 and #water > 1 then
+				place_worms(spot)
 			end
 		end
 	end
@@ -50,45 +57,64 @@ minetest.register_abm({
 	interval = 120.0,
 	chance = 200,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		if not near_surface(pos) then
+		local spot = minetest.find_node_near(pos, 1, "air")
+		if spot ~= nil and not near_surface(spot) then
 			local posNeg = { x=pos.x-6, y=pos.y-6, z=pos.z-6 }
 		  local posPos = { x=pos.x+6, y=pos.y+6, z=pos.z+6 }
-			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+			local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:cave_worms")
 			local lava = minetest.find_nodes_in_area(posNeg, posPos, "default:lava_source")
 			local water = minetest.find_nodes_in_area(posNeg, posPos, "group:water")
-			if #worms == 0 and #lava == 0  and #water > 0 then
-				minetest.add_node(pos, { name = "glow:stone_with_worms" })
+			if #worms == 0 and #lava == 0  and #water > 1 then
+				place_worms(spot)
 			end
 		end
 	end,
 })
 
 minetest.register_abm({
-	nodenames = { "glow:stone_with_worms" },
+	nodenames = { "glow:cave_worms" },
 	interval = 60.0,
 	chance = 10,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local posNeg = { x=pos.x-2, y=pos.y-2, z=pos.z-2 }
 		local posPos = { x=pos.x+2, y=pos.y+2, z=pos.z+2 }
-		local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:stone_with_worms")
+		local worms = minetest.find_nodes_in_area(posNeg, posPos, "glow:cave_worms")
 		if #worms < 20 and math.random() < 0.7 then
-			local apos = { x=pos.x+math.random(-1,1), y=pos.y+math.random(-1,1), z=pos.z+math.random(-1,1) } 
-			if minetest.get_node(apos).name == "default:stone" and minetest.find_node_near(pos, 1, "air") ~= nil then
-				minetest.add_node(apos, { name = "glow:stone_with_worms" })
+			local spot = minetest.find_node_near(pos, 3, "air")
+			if spot ~= nil and not near_surface(spot) then
+				place_worms(spot)
 			end
 		else
-			minetest.add_node(pos, { name = "default:stone" })
+			minetest.set_node(pos, { name = "air" })
 		end
 	end,
 })
+
+function place_worms(pos)
+	local axes = {
+		{ x=pos.x,   y=pos.y-1, z=pos.z   },
+		{ x=pos.x,   y=pos.y,   z=pos.z-1 },
+		{ x=pos.x,   y=pos.y,   z=pos.z+1 },
+		{ x=pos.x-1, y=pos.y,   z=pos.z   },
+		{ x=pos.x+1, y=pos.y,   z=pos.z   },
+		{ x=pos.x,   y=pos.y+1, z=pos.z   },
+	}
+	for i, cpos in ipairs(axes) do
+		if minetest.get_node(cpos).name == "default:stone" then
+			local facedir = (i-1) * 4 + math.random(0, 3) -- see 6d facedir info
+			minetest.set_node(pos, { name = "glow:cave_worms", param2 = facedir })
+			return
+		end
+	end
+end
 
 function near_surface(pos)
 	for dx = -1, 1, 1 do
 		for dy = -1, 1, 1 do
 			for dz = -1, 1, 1 do
 				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
-				local light = minetest.get_node_light(dpos, 0.5)
-				if light ~= nil and light > 4 then
+				local light = minetest.get_node_light(dpos, 0.5) -- 0.5 means noon
+				if light ~= nil and light > 5 then
 					return true
 				end
 			end
@@ -105,6 +131,31 @@ function is_facing(pos, nodename)
 	end
 	return false
 end
+
+-- clean up stupid way of doing worms ---------------------
+
+minetest.register_node("glow:stone_with_worms", {
+	description = S("Glow Worms in Stone"),
+	tiles = { "default_stone.png^worms.png" },
+	is_ground_content = true,
+	groups = { cracky = 1 },
+	sounds = default.node_sound_stone_defaults(),
+	drop = "glow:stone_with_worms",
+	paramtype = "light",
+	light_source = 4,
+})
+
+minetest.register_abm({
+	nodenames = { "glow:stone_with_worms" },
+	interval = 60.0,
+	chance = 1,
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		minetest.set_node(pos, { name = "default:stone" })
+	end,
+})
+
+
+-- SROOMS -------------------------------------------------
 
 minetest.register_node("glow:shrooms", {
 	description = S("Glow Shrooms"),
@@ -184,13 +235,16 @@ function add_shrooms(pos)
 					local tpos = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
 					if minetest.get_node(tpos).name == "default:dirt_with_grass" and math.random() < 0.2 then
 						local ppos = { x=tpos.x, y=tpos.y+1, z=tpos.z }
-						minetest.add_node(ppos, { name = "glow:shrooms" })
+						minetest.set_node(ppos, { name = "glow:shrooms" })
 					end
 				end
 			end
 		end
 	end
 end
+
+
+-- FIREFLIES ----------------------------------------------
 
 minetest.register_node("glow:fireflies", {
 	description = S("Fireflies"),
