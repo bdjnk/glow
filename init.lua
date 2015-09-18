@@ -155,7 +155,7 @@ minetest.register_abm({
 })
 
 
--- SROOMS -------------------------------------------------
+-- SHROOMS -------------------------------------------------
 
 minetest.register_node("glow:shrooms", {
 	description = S("Glow Shrooms"),
@@ -196,7 +196,7 @@ minetest.register_abm({
 	nodenames = { "default:tree" },
 	neighbors = {
 		"air",
-		"default:dirt",
+		"group:soil",
 	},
 	interval = 60.0,
 	chance = 60,
@@ -214,7 +214,7 @@ minetest.register_abm({
 	nodenames = { "glow:shrooms" },
 	neighbors = {
 		"air",
-		"default:dirt_with_grass",
+		"group:soil",
 	},
 	interval = 40.0,
 	chance = 10,
@@ -233,9 +233,11 @@ function add_shrooms(pos)
 			for ny = -1, 1, 1 do
 				for nz = -1, 1, 2 do
 					local tpos = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
-					if minetest.get_node(tpos).name == "default:dirt_with_grass" and math.random() < 0.2 then
+					if minetest.get_node(tpos).name == "group:soil" and math.random() < 0.2 then
 						local ppos = { x=tpos.x, y=tpos.y+1, z=tpos.z }
-						minetest.set_node(ppos, { name = "glow:shrooms" })
+						if minetest.get_node(ppos).name == "air" then
+							minetest.set_node(ppos, { name = "glow:shrooms" })
+						end
 					end
 				end
 			end
