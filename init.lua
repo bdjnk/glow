@@ -1,4 +1,5 @@
--- Boilerplate to support localized strings if intllib mod is installed.
+-- boilerplate to support localized strings if intllib mod is installed
+
 local S
 if intllib then
 	S = intllib.Getter()
@@ -34,19 +35,18 @@ minetest.register_node("glow:cave_worms", {
 	on_place = minetest.rotate_node,
 })
 
-local place_worm, near_surface
 local function make_worms(pos)
 	local spot = minetest.find_node_near(pos, 1, "air")
-	if not spot
-	or near_surface(spot) then
+	if not spot or near_surface(spot) then
 		return
 	end
 	local minp = vector.subtract(pos, 6)
 	local maxp = vector.add(pos, 6)
-	if #(minetest.find_nodes_in_area(minp, maxp, "glow:cave_worms")) == 0
-	and #(minetest.find_nodes_in_area(minp, maxp, "group:water")) > 1
-	and #(minetest.find_nodes_in_area(minp, maxp, "default:lava_source")) == 0 then
-		place_worm(spot)
+	if    #(minetest.find_nodes_in_area(minp, maxp, "default:lava_source")) == 0
+		and #(minetest.find_nodes_in_area(minp, maxp, "glow:cave_worms")) == 0
+		and #(minetest.find_nodes_in_area(minp, maxp, "group:water")) > 1
+	then
+		place_worms(spot)
 	end
 end
 
@@ -71,27 +71,30 @@ minetest.register_abm({
 	interval = 60.0,
 	chance = 10,
 	action = function(pos)
-		if math.random() < 0.7
-		and #(minetest.find_nodes_in_area(vector.subtract(pos, 2), vector.add(pos, 2), "glow:cave_worms")) < 20 then
-			local spot = minetest.find_node_near(pos, 3, "air")
-			if spot
-			and not near_surface(spot) then
-				place_worm(spot)
+		if math.random() < 0.7 then
+			local minp = vector.subtract(pos, 2)
+			local maxp = vector.add(pos, 2)
+			local worms_count = #(minetest.find_nodes_in_area(minp, maxp, "glow:cave_worms"))
+			if worms_count < 20 then
+				local spot = minetest.find_node_near(pos, 3, "air")
+				if spot and not near_surface(spot) then
+					place_worms(spot)
+					return
+				end
 			end
-		else
-			minetest.remove_node(pos)
 		end
+		minetest.remove_node(pos)
 	end,
 })
 
-function place_worm(pos)
+local function place_worms(pos)
 	local axes = {
-		{ x=pos.x,	 y=pos.y-1, z=pos.z	 },
-		{ x=pos.x,	 y=pos.y,	z=pos.z-1 },
-		{ x=pos.x,	 y=pos.y,	z=pos.z+1 },
-		{ x=pos.x-1, y=pos.y,	z=pos.z	 },
-		{ x=pos.x+1, y=pos.y,	z=pos.z	 },
-		{ x=pos.x,	 y=pos.y+1, z=pos.z	 },
+		{ x=pos.x,   y=pos.y-1, z=pos.z   },
+		{ x=pos.x,   y=pos.y,   z=pos.z-1 },
+		{ x=pos.x,   y=pos.y,   z=pos.z+1 },
+		{ x=pos.x-1, y=pos.y,   z=pos.z   },
+		{ x=pos.x+1, y=pos.y,   z=pos.z   },
+		{ x=pos.x,   y=pos.y+1, z=pos.z   },
 	}
 	for i, cpos in ipairs(axes) do
 		if minetest.get_node(cpos).name == "default:stone" then
@@ -102,10 +105,10 @@ function place_worm(pos)
 	end
 end
 
-function near_surface(pos)
-	for dx = -1, 1 do
-		for dy = 1, -1, -1 do
-			for dz = -1, 1 do
+local function near_surface(pos)
+	for dx = -1, 1, 1 do
+		for dy = -1, 1, 1 do
+			for dz = -1, 1, 1 do
 				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
 				local light = minetest.get_node_light(dpos, 0.5) -- 0.5 means noon
 				if light and light > 5 then
@@ -120,9 +123,9 @@ end
 --[[
 function is_facing(pos, nodename)
 	for d = -1, 1, 2 do
-		if nodename == minetest.get_node({pos.x+d, pos.y,	 pos.z	}).name then return true end
-		if nodename == minetest.get_node({pos.x,	 pos.y+d, pos.z	}).name then return true end
-		if nodename == minetest.get_node({pos.x,	 pos.y,	 pos.z+d}).name then return true end
+		if nodename == minetest.get_node({pos.x+d, pos.y,   pos.z  }).name then return true end
+		if nodename == minetest.get_node({pos.x,   pos.y+d, pos.z  }).name then return true end
+		if nodename == minetest.get_node({pos.x,   pos.y,   pos.z+d}).name then return true end
 	end
 	return false
 end--]]
@@ -282,8 +285,7 @@ minetest.register_abm({
 	chance = 300,
 	action = function(pos)
 		local time = minetest.get_timeofday()
-		if time <= 0.74
-		and time >= 0.22 then
+		if time <= 0.74 and time >= 0.22 then
 			return
 		end
 		if not minetest.find_node_near(pos, 9, "glow:fireflies") then
