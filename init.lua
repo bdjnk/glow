@@ -197,7 +197,7 @@ minetest.register_abm({
 	action = function(pos)
 		local minp = vector.subtract(pos, 1)
 		local maxp = vector.add(pos, 1)
-		local shroom_count = minetest.find_nodes_in_area(minp, maxp, "glow:shrooms")
+		local shroom_count = #(minetest.find_nodes_in_area(minp, maxp, "glow:shrooms"))
 		if shroom_count == 0 or (shroom_count == 1 and math.random() < 0.3) then
 			add_shrooms(pos)
 		end
