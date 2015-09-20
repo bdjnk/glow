@@ -35,7 +35,7 @@ minetest.register_node("glow:cave_worms", {
 	on_place = minetest.rotate_node,
 })
 
-local function make_worms(pos)
+function make_worms(pos)
 	local spot = minetest.find_node_near(pos, 1, "air")
 	if not spot or near_surface(spot) then
 		return
@@ -86,7 +86,7 @@ minetest.register_abm({
 	end,
 })
 
-local function place_worms(pos)
+function place_worms(pos)
 	local axes = {
 		{ x=pos.x,   y=pos.y-1, z=pos.z   },
 		{ x=pos.x,   y=pos.y,   z=pos.z-1 },
@@ -104,7 +104,7 @@ local function place_worms(pos)
 	end
 end
 
-local function near_surface(pos)
+function near_surface(pos)
 	for dx = -1, 1, 1 do
 		for dy = -1, 1, 1 do
 			for dz = -1, 1, 1 do
@@ -177,7 +177,6 @@ minetest.register_node("glow:shrooms", {
 	},
 })
 
-local add_shrooms
 minetest.register_on_generated(function(minp, maxp, seed)
 	for _,pos in pairs(minetest.find_nodes_in_area(minp, maxp, "default:tree")) do
 		if math.random() < 0.2
