@@ -233,7 +233,8 @@ function add_shrooms(pos)
 			for ny = -1, 1, 1 do
 				for nz = -1, 1, 2 do
 					local tpos = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
-					if minetest.get_node(tpos).name == "group:soil" and math.random() < 0.2 then
+					soil = minetest.get_item_group(minetest.get_node(tpos).name, "soil")
+					if soil > 0 and math.random() < 0.2 then
 						local ppos = { x=tpos.x, y=tpos.y+1, z=tpos.z }
 						if minetest.get_node(ppos).name == "air" then
 							minetest.set_node(ppos, { name = "glow:shrooms" })
