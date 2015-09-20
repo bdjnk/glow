@@ -26,11 +26,11 @@ minetest.register_node("glow:cave_worms", {
 	walkable = false,
 	node_box = {
 		type = "fixed",
-		fixed = {-1/2, -1/2, -1/2, 1/2, -15/32, 1/2},
+		fixed = { -1/2, -1/2, -1/2, 1/2, -15/32, 1/2 },
 	},
 	selection_box = {
 		type = "fixed",
-		fixed = {-1/2, -1/2, -1/2, 1/2, -7/16, 1/2},
+		fixed = { -1/2, -1/2, -1/2, 1/2, -7/16, 1/2 },
 	},
 	on_place = minetest.rotate_node,
 })
@@ -42,10 +42,9 @@ local function make_worms(pos)
 	end
 	local minp = vector.subtract(pos, 6)
 	local maxp = vector.add(pos, 6)
-	if    #(minetest.find_nodes_in_area(minp, maxp, "default:lava_source")) == 0
-		and #(minetest.find_nodes_in_area(minp, maxp, "glow:cave_worms")) == 0
-		and #(minetest.find_nodes_in_area(minp, maxp, "group:water")) > 1
-	then
+	if  #(minetest.find_nodes_in_area(minp, maxp, "default:lava_source")) == 0
+	and #(minetest.find_nodes_in_area(minp, maxp, "glow:cave_worms")) == 0
+	and #(minetest.find_nodes_in_area(minp, maxp, "group:water")) > 1 then
 		place_worms(spot)
 	end
 end
@@ -197,9 +196,10 @@ minetest.register_abm({
 	interval = 60.0,
 	chance = 60,
 	action = function(pos)
-		local shrooms = minetest.find_nodes_in_area(vector.subtract(pos, 1), vector.add(pos, 1), "glow:shrooms")
-		if #shrooms == 0
-		or (#shrooms == 1 and math.random() < 0.3) then
+		local minp = vector.subtract(pos, 1)
+		local maxp = vector.add(pos, 1)
+		local shroom_count = minetest.find_nodes_in_area(minp, maxp, "glow:shrooms")
+		if shroom_count == 0 or (shroom_count == 1 and math.random() < 0.3) then
 			add_shrooms(pos)
 		end
 	end,
