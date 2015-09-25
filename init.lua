@@ -35,7 +35,40 @@ minetest.register_node("glow:cave_worms", {
 	on_place = minetest.rotate_node,
 })
 
-function make_worms(pos)
+local function near_surface(pos)
+	for dx = -1, 1, 1 do
+		for dy = -1, 1, 1 do
+			for dz = -1, 1, 1 do
+				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
+				local light = minetest.get_node_light(dpos, 0.5) -- 0.5 means noon
+				if light and light > 5 then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+local function place_worms(pos)
+	local axes = {
+		{ x=pos.x,   y=pos.y-1, z=pos.z   },
+		{ x=pos.x,   y=pos.y,   z=pos.z-1 },
+		{ x=pos.x,   y=pos.y,   z=pos.z+1 },
+		{ x=pos.x-1, y=pos.y,   z=pos.z   },
+		{ x=pos.x+1, y=pos.y,   z=pos.z   },
+		{ x=pos.x,   y=pos.y+1, z=pos.z   },
+	}
+	for i, cpos in ipairs(axes) do
+		if minetest.get_node(cpos).name == "default:stone" then
+			local facedir = (i-1) * 4 + math.random(0, 3) -- see 6d facedir info
+			minetest.set_node(pos, { name = "glow:cave_worms", param2 = facedir })
+			return
+		end
+	end
+end
+
+local function make_worms(pos)
 	local spot = minetest.find_node_near(pos, 1, "air")
 	if not spot or near_surface(spot) then
 		return
@@ -85,39 +118,6 @@ minetest.register_abm({
 		minetest.remove_node(pos)
 	end,
 })
-
-function place_worms(pos)
-	local axes = {
-		{ x=pos.x,   y=pos.y-1, z=pos.z   },
-		{ x=pos.x,   y=pos.y,   z=pos.z-1 },
-		{ x=pos.x,   y=pos.y,   z=pos.z+1 },
-		{ x=pos.x-1, y=pos.y,   z=pos.z   },
-		{ x=pos.x+1, y=pos.y,   z=pos.z   },
-		{ x=pos.x,   y=pos.y+1, z=pos.z   },
-	}
-	for i, cpos in ipairs(axes) do
-		if minetest.get_node(cpos).name == "default:stone" then
-			local facedir = (i-1) * 4 + math.random(0, 3) -- see 6d facedir info
-			minetest.set_node(pos, { name = "glow:cave_worms", param2 = facedir })
-			return
-		end
-	end
-end
-
-function near_surface(pos)
-	for dx = -1, 1, 1 do
-		for dy = -1, 1, 1 do
-			for dz = -1, 1, 1 do
-				local dpos = { x=pos.x+dx, y=pos.y+dy, z=pos.z+dz }
-				local light = minetest.get_node_light(dpos, 0.5) -- 0.5 means noon
-				if light and light > 5 then
-					return true
-				end
-			end
-		end
-	end
-	return false
-end
 
 --[[
 function is_facing(pos, nodename)
@@ -177,6 +177,28 @@ minetest.register_node("glow:shrooms", {
 	},
 })
 
+local function add_shrooms(pos)
+	if minetest.find_node_near(pos, 2, "glow:shrooms") then
+		return
+	end
+	for nx = -1, 1, 2 do
+		for nz = -1, 1, 2 do
+			for ny = 1, -1, -1 do
+				if math.random() < 0.2 then
+					local p = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
+					if minetest.get_item_group(minetest.get_node(p).name, "soil") ~= 0 then
+						p.y = p.y+1
+						if minetest.get_node(p).name == "air" then
+							minetest.set_node(p, { name = "glow:shrooms" })
+						end
+						break
+					end
+				end
+			end
+		end
+	end
+end
+
 minetest.register_on_generated(function(minp, maxp, seed)
 	for _,pos in pairs(minetest.find_nodes_in_area(minp, maxp, "default:tree")) do
 		if math.random() < 0.2
@@ -220,28 +242,6 @@ minetest.register_abm({
 		end
 	end,
 })
-
-function add_shrooms(pos)
-	if minetest.find_node_near(pos, 2, "glow:shrooms") then
-		return
-	end
-	for nx = -1, 1, 2 do
-		for nz = -1, 1, 2 do
-			for ny = 1, -1, -1 do
-				if math.random() < 0.2 then
-					local p = { x=pos.x+nx, y=pos.y-1+ny, z=pos.z+nz }
-					if minetest.get_item_group(minetest.get_node(p).name, "soil") ~= 0 then
-						p.y = p.y+1
-						if minetest.get_node(p).name == "air" then
-							minetest.set_node(p, { name = "glow:shrooms" })
-						end
-						break
-					end
-				end
-			end
-		end
-	end
-end
 
 
 -- FIREFLIES ----------------------------------------------
