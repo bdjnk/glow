@@ -135,28 +135,6 @@ function is_facing(pos, nodename)
 	return false
 end--]]
 
--- clean up stupid way of doing worms ---------------------
-
-minetest.register_node("glow:stone_with_worms", {
-	description = S("Glow Worms in Stone"),
-	tiles = { "default_stone.png^worms.png" },
-	is_ground_content = true,
-	groups = { cracky = 1 },
-	sounds = default.node_sound_stone_defaults(),
-	drop = "glow:stone_with_worms",
-	paramtype = "light",
-	light_source = 4,
-})
-
-minetest.register_abm({
-	nodenames = { "glow:stone_with_worms" },
-	interval = 60.0,
-	chance = 1,
-	action = function(pos)
-		minetest.set_node(pos, { name = "default:stone" })
-	end,
-})
-
 
 -- SHROOMS -------------------------------------------------
 
@@ -247,61 +225,4 @@ minetest.register_abm({
 			minetest.remove_node(pos)
 		end
 	end,
-})
-
-
--- FIREFLIES ----------------------------------------------
-
-minetest.register_node("glow:fireflies", {
-	description = S("Fireflies"),
-	drawtype = "glasslike",
-	tiles = {
-		{
-			name = "fireflies.png",
-			animation = {
-				type = "vertical_frames",
-				aspect_w = 16,
-				aspect_h = 16,
-				length = 2,
-			},
-		},
-	},
-	alpha = 100,
-	paramtype = "light",
-	light_source = 4,
-	walkable = false,
-	pointable = false,
-	diggable = false,
-	climbable = false,
-	buildable_to = true,
-	drop = "",
-})
-
-minetest.register_abm({
-	nodenames = { "air" },
-	neighbors = {
-		"default:grass_1",
-		"default:grass_2",
-		"default:grass_3",
-		"default:grass_4",
-		"default:grass_5",
-	},
-	interval = 2.0,
-	chance = 300,
-	action = function(pos)
-		local time = minetest.get_timeofday()
-		if time <= 0.74 and time >= 0.22 then
-			return
-		end
-		if not minetest.find_node_near(pos, 9, "glow:fireflies") then
-			minetest.set_node(pos, {name = "glow:fireflies"})
-		end
-	end,
-})
-
-minetest.register_abm({
-	nodenames = {"glow:fireflies"},
-	interval = 1.0,
-	chance = 2,
-	action = minetest.remove_node,
 })
